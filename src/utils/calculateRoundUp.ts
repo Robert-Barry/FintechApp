@@ -7,7 +7,7 @@ export function calculateRoundUp(amountInCents: number): number {
     } else if (amountInCents % 100 === 0) {
         numberToReturn = 0;
     } else {
-        const nextNultipleOf100 = Math.ceil(amountInCents / 100) * 100;
+        const nextNultipleOf100 = amountInCents - (amountInCents % 100) + 100;
         numberToReturn = nextNultipleOf100 - amountInCents;
     }
 
