@@ -1,11 +1,12 @@
-const { createDefaultPreset } = require("ts-jest");
-
-const tsJestTransformCfg = createDefaultPreset().transform;
-
-/** @type {import("jest").Config} **/
 module.exports = {
-  testEnvironment: "node",
+  // Use the core react-native preset directly to completely bypass jest-expo's broken setup script
+  preset: 'react-native',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  setupFilesAfterEnv: [],
   transform: {
-    ...tsJestTransformCfg,
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['babel-preset-expo'] }],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native)/)',
+  ],
 };
