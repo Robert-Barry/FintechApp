@@ -5,7 +5,8 @@ import {
     FlatList,
     StyleSheet,
 } from "react-native";
-import TransactionItem, { Transaction } from "../components/TransactionItem";
+import TransactionItem from "../components/TransactionItem";
+import { Transaction } from '../types';
 
 interface WalletDashboardPros {
     transactions: Transaction[];
@@ -15,9 +16,6 @@ const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
 });
-
-
-
 
 export default function WalletDashboard({ transactions }: WalletDashboardPros) {
     const accountTotalInCents = transactions.reduce((total, transaction) => {

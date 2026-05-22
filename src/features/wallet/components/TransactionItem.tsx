@@ -1,12 +1,7 @@
 import * as React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { calculateRoundUp } from '../../../utils/calculateRoundUp';
-
-export interface Transaction {
-    id: number;
-    description: string;
-    amountInCents: number;
-}
+import { Transaction } from '../types';
 
 interface ChildProps {
     transaction: Transaction;
