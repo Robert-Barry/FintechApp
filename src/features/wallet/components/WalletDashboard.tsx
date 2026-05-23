@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { calculateRoundUp } from "../../../utils/calculateRoundUp";
 import { 
     View, 
@@ -7,22 +8,36 @@ import {
 } from "react-native";
 import TransactionItem from "../components/TransactionItem";
 import { Transaction } from '../types';
-
-interface WalletDashboardPros {
-    transactions: Transaction[];
-}
+import { walletService } from "../services/walletService";
 
 const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
 });
 
-export default function WalletDashboard({ transactions }: WalletDashboardPros) {
-    const accountTotalInCents = transactions.reduce((total, transaction) => {
+export default function WalletDashboard() {
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<any | null>(null);
+
+    useEffect(() => {
+        (async function fetchWalletData() {
+            try {
+                const data = await walletService.getLatestTransactions();
+                setTransactions(data);
+            } catch (error) {
+                setError(error);
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, []);
+
+    const accountTotalInCents = transactions.reduce((total: number, transaction: Transaction) => {
         return total + transaction.amountInCents;
     }, 0);
 
-    const roundUpInCents = transactions.reduce((total, transaction) => {
+    const roundUpInCents = transactions.reduce((total: number, transaction: Transaction) => {
         let roundUpInCents = 0;
 
         if (transaction.amountInCents < 0) {
@@ -38,27 +53,33 @@ export default function WalletDashboard({ transactions }: WalletDashboardPros) {
     const formattedSavings = formatter.format(roundUpInCents / 100);
 
     return (
-        <View style={styles.container}>
-            {/*  Header / Summary / Blocks */}
-            <View style={styles.summaryCard}>
-                <Text style={styles.label}>Total Balance</Text>
-                <Text style={styles.balanceText}>{formattedTotal}</Text>
+        <>
+        {isLoading ? (
+            <Text>Loading wallet data...</Text>
+        ) : (
+            <View style={styles.container}>
+                {/*  Header / Summary / Blocks */}
+                <View style={styles.summaryCard}>
+                    <Text style={styles.label}>Total Balance</Text>
+                    <Text style={styles.balanceText}>{formattedTotal}</Text>
 
-                <View style={styles.savingsRow}>
-                    <Text style={styles.savingsLabel}>Total Round-Up Saved: </Text>
-                    <Text style={styles.savingsValue}>{formattedSavings}</Text>
+                    <View style={styles.savingsRow}>
+                        <Text style={styles.savingsLabel}>Total Round-Up Saved: </Text>
+                        <Text style={styles.savingsValue}>{formattedSavings}</Text>
+                    </View>
                 </View>
+
+                <Text style={styles.listHeader}>Recent Transactions</Text>
+
+                <FlatList
+                    data={transactions}
+                    renderItem={({ item }) => <TransactionItem transaction={item} />}
+                    keyExtractor={(item) => item.id.toString()}
+                    contentContainerStyle={styles.listContainer}
+                />
             </View>
-
-            <Text style={styles.listHeader}>Recent Transactions</Text>
-
-            <FlatList
-                data={transactions}
-                renderItem={({ item }) => <TransactionItem transaction={item} />}
-                keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={styles.listContainer}
-            />
-        </View>
+        )}
+        </>
     )
 }
 
