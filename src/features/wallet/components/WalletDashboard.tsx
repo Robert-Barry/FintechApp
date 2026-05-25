@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { calculateRoundUp } from "../../../utils/calculateRoundUp";
+import { USDformatter } from "../../../utils/currencyFormatter";
 import { 
     View, 
     Text, 
@@ -9,11 +10,6 @@ import {
 import TransactionItem from "../components/TransactionItem";
 import { Transaction } from '../types';
 import { walletService } from "../services/walletService";
-
-const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-});
 
 export default function WalletDashboard() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -49,8 +45,8 @@ export default function WalletDashboard() {
         return total + roundUpInCents;
     }, 0);
 
-    const formattedTotal = formatter.format(accountTotalInCents / 100);
-    const formattedSavings = formatter.format(roundUpInCents / 100);
+    const formattedTotal = USDformatter.format(accountTotalInCents / 100);
+    const formattedSavings = USDformatter.format(roundUpInCents / 100);
 
     return (
         <>
