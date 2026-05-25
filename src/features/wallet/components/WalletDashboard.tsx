@@ -1,92 +1,95 @@
-import { useState, useEffect } from "react";
-import { calculateRoundUp } from "../../../utils/calculateRoundUp";
+import React from "react";
+import { USDformatter } from "../../../utils/currencyFormatter";
 import { 
     View, 
-    Text, 
+    Text,
+    Pressable, 
     FlatList,
     StyleSheet,
 } from "react-native";
 import TransactionItem from "../components/TransactionItem";
-import { Transaction } from '../types';
-import { walletService } from "../services/walletService";
+import { useWallet, WalletProvider } from "../context/WalletContext";
 
-const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-});
+function DashboardComponent() {
+    const {
+        transactions, 
+        accountTotalInCents, 
+        vaultBalanceInCents, 
+        isLoading, 
+        withdrawVaultToMain
+    } = useWallet();
 
-export default function WalletDashboard() {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<any | null>(null);
+    const formattedTotal = USDformatter.format(accountTotalInCents / 100);
+    const formattedSavings = USDformatter.format(vaultBalanceInCents / 100);
 
-    useEffect(() => {
-        (async function fetchWalletData() {
-            try {
-                const data = await walletService.getLatestTransactions();
-                setTransactions(data);
-            } catch (error) {
-                setError(error);
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    }, []);
-
-    const accountTotalInCents = transactions.reduce((total: number, transaction: Transaction) => {
-        return total + transaction.amountInCents;
-    }, 0);
-
-    const roundUpInCents = transactions.reduce((total: number, transaction: Transaction) => {
-        let roundUpInCents = 0;
-
-        if (transaction.amountInCents < 0) {
-            const absoluteCents = Math.abs(transaction.amountInCents);
-            // Calculate the round up
-            roundUpInCents = calculateRoundUp(absoluteCents);
-        }
-
-        return total + roundUpInCents;
-    }, 0);
-
-    const formattedTotal = formatter.format(accountTotalInCents / 100);
-    const formattedSavings = formatter.format(roundUpInCents / 100);
+    if (isLoading) {
+        return (
+            <View style={styles.centerContainer}>
+                <Text style={styles.loadingText}>Loading wallet data...</Text>
+            </View>
+        );
+    }
 
     return (
-        <>
-        {isLoading ? (
-            <Text>Loading wallet data...</Text>
-        ) : (
-            <View style={styles.container}>
-                {/*  Header / Summary / Blocks */}
-                <View style={styles.summaryCard}>
-                    <Text style={styles.label}>Total Balance</Text>
-                    <Text style={styles.balanceText}>{formattedTotal}</Text>
+        <View style={styles.container}>
+            {/* Header / Summary / Blocks */}
+            <View style={styles.summaryCard}>
+                <Text style={styles.label}>Total Balance</Text>
+                <Text style={styles.balanceText}>{formattedTotal}</Text>
 
-                    <View style={styles.savingsRow}>
-                        <Text style={styles.savingsLabel}>Total Round-Up Saved: </Text>
-                        <Text style={styles.savingsValue}>{formattedSavings}</Text>
-                    </View>
+                <View style={styles.savingsRow}>
+                    <Text style={styles.savingsLabel}>Savings Vault Balance: </Text>
+                    <Text style={styles.savingsValue}>{formattedSavings}</Text>
                 </View>
-
-                <Text style={styles.listHeader}>Recent Transactions</Text>
-
-                <FlatList
-                    data={transactions}
-                    renderItem={({ item }) => <TransactionItem transaction={item} />}
-                    keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={styles.listContainer}
-                />
+                
+                {/* Withdraw Action Trigger Button */}
+                <Pressable 
+                    onPress={withdrawVaultToMain} 
+                    style={({ pressed }) => [
+                        styles.withdrawButton,
+                        pressed && styles.buttonPressed,
+                        vaultBalanceInCents <= 0 && styles.buttonDisabled
+                    ]}
+                    disabled={vaultBalanceInCents <= 0}
+                >
+                    <Text style={styles.withdrawButtonText}>Withdraw Vault to Main</Text>
+                </Pressable>
             </View>
-        )}
-        </>
-    )
+
+            <Text style={styles.listHeader}>Recent Transactions</Text>
+
+            <FlatList
+                data={transactions}
+                renderItem={({ item }) => <TransactionItem transaction={item} />}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={styles.listContainer}
+            />
+        </View>
+    );
+}
+
+export default function WalletDashboard() {
+    return (
+        <WalletProvider>
+            <DashboardComponent />
+        </WalletProvider>
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F8F8F8'
+    },
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F8F8'
+    },
+    loadingText: {
+        fontSize: 16,
+        color: '#64748B',
     },
     summaryCard: {
         backgroundColor: '#FFFFFF',
@@ -121,6 +124,24 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         color: '#16A34A',
+    },
+    withdrawButton: {
+        backgroundColor: '#0F172A',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonPressed: {
+        opacity: 0.8,
+    },
+    buttonDisabled: {
+        backgroundColor: '#CBD5E1',
+    },
+    withdrawButtonText: {
+        color: '#FFFFFF',
+        fontWeight: 600,
+        fontSize: 14,
     },
     listHeader: {
         fontSize: 18,
