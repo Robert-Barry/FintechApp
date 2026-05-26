@@ -1,3 +1,4 @@
+// jest.config.js
 module.exports = {
   // Use the core react-native preset directly to completely bypass jest-expo's broken setup script
   preset: 'react-native',
@@ -7,6 +8,6 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['babel-preset-expo'] }],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native)/)',
+    'node_modules/(?!(react-native|@react-native|expo-router|@react-navigation|react-navigation)/)',
   ],
 };
