@@ -39,6 +39,7 @@ export default function WalletDashboardScreen() {
             {isOffline && (
                 <View style={styles.offlineBanner}>
                     <Text style={styles.offlineBannerText}>⚠️ Operating in Offline Mode — Viewing Cached Data</Text>
+                    
                 </View>
             )}
             {/* Header / Summary / Blocks */}
