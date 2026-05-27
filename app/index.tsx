@@ -17,7 +17,8 @@ export default function WalletDashboardScreen() {
         transactions, 
         accountTotalInCents, 
         vaultBalanceInCents, 
-        isLoading, 
+        isLoading,
+        isOffline, 
         withdrawVaultToMain
     } = useWallet();
 
@@ -34,6 +35,13 @@ export default function WalletDashboardScreen() {
 
     return (
         <View style={styles.container}>
+            {/* Dynamic System Connection Banner */}
+            {isOffline && (
+                <View style={styles.offlineBanner}>
+                    <Text style={styles.offlineBannerText}>⚠️ Operating in Offline Mode — Viewing Cached Data</Text>
+                    
+                </View>
+            )}
             {/* Header / Summary / Blocks */}
             <View style={styles.summaryCard}>
                 <Text style={styles.label}>Total Balance</Text>
@@ -152,5 +160,19 @@ const styles = StyleSheet.create({
     },
     listContainer: { 
         paddingHorizontal: 16 
+    },
+    offlineBanner: {
+        backgroundColor: '#EF4444',
+        paddingVertical: 8,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    offlineBannerText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     }
+
 });
