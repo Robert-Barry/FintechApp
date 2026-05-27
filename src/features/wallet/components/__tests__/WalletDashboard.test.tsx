@@ -72,8 +72,10 @@ describe('WalletDashboard Component - Integration Suite', () => {
     const withdrawButton = getByText('Withdraw Vault to Main');
     fireEvent.press(withdrawButton);
 
-    expect(getByText('$0.00')).toBeTruthy();
-    expect(getByText('$96.70')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('$0.00')).toBeTruthy();
+      expect(getByText('$96.70')).toBeTruthy();
+    });
 
     expect(alertSpy).toHaveBeenCalledWith(
       "Transfer Successful",

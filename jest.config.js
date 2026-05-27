@@ -3,7 +3,8 @@ module.exports = {
   // Use the core react-native preset directly to completely bypass jest-expo's broken setup script
   preset: 'react-native',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  setupFilesAfterEnv: [],
+  setupFiles: ['@react-native-async-storage/async-storage/jest/async-storage-mock'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['babel-preset-expo'] }],
   },
@@ -11,3 +12,4 @@ module.exports = {
     'node_modules/(?!(react-native|@react-native|expo-router|@react-navigation|react-navigation)/)',
   ],
 };
+
